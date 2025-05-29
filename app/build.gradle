@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace 'ru.gb.android.workshop4.marketsample'
-    compileSdk 33
+    compileSdk 35
 
     defaultConfig {
         applicationId "ru.gb.android.workshop4.marketsample"

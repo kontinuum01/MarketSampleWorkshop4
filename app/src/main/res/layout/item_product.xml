@@ -19,7 +19,7 @@
             android:layout_height="130dp"
             android:layout_weight="1"
             android:scaleType="centerCrop"
-            tools:background="#99ff0000" />
+            tools:background="@color/red" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="0dp"
