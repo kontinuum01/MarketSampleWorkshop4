@@ -8,7 +8,8 @@ class ProductDataMapper @Inject constructor() {
             id = productDto.id,
             name = productDto.name,
             image = productDto.image,
-            price = productDto.price
+            price = productDto.price,
+//            isFavorite = productDto.isFavorite
         )
     }
 }

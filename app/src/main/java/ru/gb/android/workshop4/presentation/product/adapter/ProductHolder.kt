@@ -4,6 +4,7 @@ import android.content.res.ColorStateList
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import ru.gb.android.workshop4.data.favorites.FavoriteEntity
 import ru.gb.android.workshop4.marketsample.R
 import ru.gb.android.workshop4.marketsample.databinding.ItemProductBinding
 import ru.gb.android.workshop4.presentation.common.bump

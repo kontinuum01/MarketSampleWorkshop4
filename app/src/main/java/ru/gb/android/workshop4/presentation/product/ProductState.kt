@@ -5,7 +5,7 @@ data class ProductsScreenState(
     val productListState: List<ProductState> = emptyList(),
     val hasError: Boolean = false,
     val errorRes: Int = 0,
-)
+    )
 
 data class ProductState(
     val id: String = "",

@@ -19,14 +19,18 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.whenever
+import ru.gb.android.workshop4.data.favorites.FavoritesDataSource
+import ru.gb.android.workshop4.data.favorites.FavoritesRepository
 import ru.gb.android.workshop4.data.product.ProductDataMapper
 import ru.gb.android.workshop4.data.product.ProductDto
 import ru.gb.android.workshop4.data.product.ProductEntity
 import ru.gb.android.workshop4.data.product.ProductLocalDataSource
 import ru.gb.android.workshop4.data.product.ProductRemoteDataSource
 import ru.gb.android.workshop4.data.product.ProductRepository
+import ru.gb.android.workshop4.domain.product.AddFavoriteUseCase
 import ru.gb.android.workshop4.domain.product.ConsumeProductsUseCase
 import ru.gb.android.workshop4.domain.product.ProductDomainMapper
+import ru.gb.android.workshop4.domain.product.RemoveFavoriteUseCase
 import ru.gb.android.workshop4.presentation.common.PriceFormatterImpl
 import ru.gb.android.workshop4.presentation.product.ProductListViewModel
 import ru.gb.android.workshop4.presentation.product.ProductState
@@ -49,6 +53,9 @@ class IntegrationTest {
     @Mock
     lateinit var productRemoteDataSource: ProductRemoteDataSource
 
+    @Mock
+    lateinit var favoritesDataSource: FavoritesDataSource
+
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule(StandardTestDispatcher())
 
@@ -66,11 +73,26 @@ class IntegrationTest {
             productRepository = productRepository,
             productDomainMapper = ProductDomainMapper(),
         )
+        val favoritesRepository = FavoritesRepository(
+            favoritesDataSource = favoritesDataSource,
+            dispatcher = ioDispatcher
+        )
+
+        val addFavoriteUseCase = AddFavoriteUseCase(
+            favoritesRepository = favoritesRepository
+        )
+        val removeFavoriteUseCase = RemoveFavoriteUseCase(
+            favoritesRepository = favoritesRepository
+        )
+
         sut = ProductListViewModel(
+            addFavoriteUseCase = addFavoriteUseCase,
+            removeFavoriteUseCase = removeFavoriteUseCase,
             consumeProductsUseCase = consumeProductsUseCase,
             productStateFactory = ProductStateFactory(priceFormatter = PriceFormatterImpl()),
         )
     }
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
@@ -116,7 +138,7 @@ class IntegrationTest {
             name = name,
             image = image,
             price = price,
-        )
+            )
     }
 
     private fun CoroutineScope.collectResults(): Pair<Job, List<ProductsScreenState>> {

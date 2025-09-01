@@ -4,11 +4,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import dagger.hilt.android.scopes.FragmentScoped
-import dagger.hilt.android.scopes.ViewModelScoped
+import ru.gb.android.workshop4.data.favorites.FavoriteEntity
 import ru.gb.android.workshop4.marketsample.databinding.ItemProductBinding
 import ru.gb.android.workshop4.presentation.product.ProductState
-import javax.inject.Inject
 
 class ProductsAdapter(
     private val onAddToFavorites: (String) -> Unit,

@@ -15,6 +15,7 @@ class ProductStateFactory @Inject constructor(
             name = product.name,
             image = product.image,
             price = product.price.let(priceFormatter::format),
+            isFavorite = product.isFavorite
         )
     }
 }
