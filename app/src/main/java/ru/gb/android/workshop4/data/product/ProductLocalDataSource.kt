@@ -12,11 +12,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import javax.inject.Inject
 
+@OptIn(InternalSerializationApi::class)
 interface ProductLocalDataSource {
     fun consumeProducts(): Flow<List<ProductEntity>>
     suspend fun saveProducts(products: List<ProductEntity>)
 }
 
+@OptIn(InternalSerializationApi::class)
 class ProductLocalDataSourceImpl(
     private val dataStore: DataStore<Preferences>,
 ) : ProductLocalDataSource {
@@ -27,7 +29,7 @@ class ProductLocalDataSourceImpl(
         dataStore.edit { prefs -> prefs[productPreferencesKey] = encodeToString(products) }
     }
 
-    @OptIn(InternalSerializationApi::class)
+
     private fun decodeFromString(string: String): List<ProductEntity> =
         try {
             Json.decodeFromString(ListSerializer(ProductEntity::class.serializer()), string)
@@ -42,7 +44,7 @@ class ProductLocalDataSourceImpl(
 
     private val productPreferencesKey = stringPreferencesKey(PRODUCT_KEY)
 
-    @OptIn(InternalSerializationApi::class)
+
     private fun encodeToString(products: List<ProductEntity>): String =
         Json.encodeToString(
             ListSerializer(ProductEntity::class.serializer()),

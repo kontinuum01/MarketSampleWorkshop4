@@ -1,15 +1,18 @@
 [versions]
-agp = "8.2.2"
-kotlin = "1.8.21"
+agp = "8.6.1"
+hiltAndroidTesting = "2.57.2"
+kotlin = "2.0.0"
 core-ktx = "1.9.0"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
 appcompat = "1.6.1"
+kotlinTest = "1.8.21"
 material = "1.9.0"
 constraintlayout = "2.1.4"
 lifecycle-livedata-ktx = "2.6.1"
 lifecycle-viewmodel-ktx = "2.6.1"
+mockk = "1.14.5"
 navigation-fragment-ktx = "2.6.0"
 navigation-ui-ktx = "2.6.0"
 coil = "2.4.0"
@@ -25,23 +28,30 @@ rxandroid = "2.1.1"
 kotlinx-coroutines-rx2 = "1.7.3"
 coroutines = "1.7.3"
 dagger = "2.48"
-hilt = "2.44"
+hilt = "2.57.2"
 mockitoCore = "4.7.0"
 mockitoKotlin = "4.0.0"
 mockitoInline = "5.1.1"
 immutableCollection = "0.3.5"
+junitKtx = "1.3.0"
+
+
+
 
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hiltAndroidTesting" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlinTest" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle-livedata-ktx" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle-viewmodel-ktx" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation-fragment-ktx" }
 navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation-ui-ktx" }
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
@@ -67,6 +77,8 @@ test-mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mo
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
+
 
 
 [bundles]

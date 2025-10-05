@@ -1,7 +1,7 @@
 package ru.gb.android.workshop4.presentation.product
 
 data class ProductsScreenState(
-    val isLoading: Boolean = false,
+    var isLoading: Boolean = false,
     val productListState: List<ProductState> = emptyList(),
     val hasError: Boolean = false,
     val errorRes: Int = 0,

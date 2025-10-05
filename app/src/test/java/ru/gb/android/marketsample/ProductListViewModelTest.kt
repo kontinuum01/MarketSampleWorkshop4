@@ -13,6 +13,7 @@ import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.whenever
 import ru.gb.android.workshop4.domain.product.AddFavoriteUseCase
+import ru.gb.android.workshop4.domain.product.ConsumeFavoritesUseCase
 import ru.gb.android.workshop4.domain.product.ConsumeProductsUseCase
 import ru.gb.android.workshop4.domain.product.Product
 import ru.gb.android.workshop4.domain.product.RemoveFavoriteUseCase
@@ -27,7 +28,7 @@ class ProductListViewModelTest {
     private lateinit var sut: ProductListViewModel
 
     @Mock
-    lateinit var consumeProductsUseCase: ConsumeProductsUseCase
+    lateinit var consumeFavoritesUseCase: ConsumeFavoritesUseCase
 
     @Mock
     lateinit var productStateFactory: ProductStateFactory
@@ -44,17 +45,17 @@ class ProductListViewModelTest {
     @Before
     fun setup() {
         sut = ProductListViewModel(
-            consumeProductsUseCase = consumeProductsUseCase,
             productStateFactory = productStateFactory,
             removeFavoriteUseCase = removeFavoriteUseCase,
-            addFavoriteUseCase = addFavoriteUseCase
+            addFavoriteUseCase = addFavoriteUseCase,
+            consumeFavoritesUseCase = consumeFavoritesUseCase
         )
     }
 
     @Test
-    fun `requestProducts WHEN starting loading EXPECT isLoading flag in state`() {
+    fun `requestProducts WHEN starting loading EXPECT isLoading flag in state `() {
         // arrange
-        whenever(consumeProductsUseCase.invoke()).thenReturn(flowOf())
+        whenever(consumeFavoritesUseCase.invoke()).thenReturn(flowOf())
 
         // act
         sut.requestProducts()
@@ -79,7 +80,7 @@ class ProductListViewModelTest {
     @Test
     fun `requestProducts WHEN product loading has error EXPECT state has en error`() {
         // arrange
-        whenever(consumeProductsUseCase.invoke()).thenReturn(flow { throw IllegalStateException() })
+        whenever(consumeFavoritesUseCase.invoke()).thenReturn(flow { throw IllegalStateException() })
 
         // act
         sut.requestProducts()
@@ -90,8 +91,16 @@ class ProductListViewModelTest {
     }
 
     private fun load2Products(): List<ProductState> {
-        whenever(consumeProductsUseCase.invoke())
-            .thenReturn(flowOf(listOf(Product(id = "1"), Product(id = "2"))))
+        whenever(consumeFavoritesUseCase.invoke())
+            .thenReturn(
+                flowOf(
+                    listOf(
+                        Product(id = "1"), Product(
+                            id = "2",
+                        )
+                    )
+                )
+            )
 
         val state1 = ProductState(id = "1")
         val state2 = ProductState(id = "2")

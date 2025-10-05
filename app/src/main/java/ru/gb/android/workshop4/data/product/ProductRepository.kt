@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.InternalSerializationApi
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,6 +19,7 @@ class ProductRepository @Inject constructor(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
+    @OptIn(InternalSerializationApi::class)
     fun consumeProducts(): Flow<List<ProductEntity>> {
         scope.launch {
             val products = productRemoteDataSource.getProducts()

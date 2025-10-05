@@ -1,5 +1,6 @@
 package ru.gb.android.workshop4.domain.product
 
+import kotlinx.serialization.InternalSerializationApi
 import ru.gb.android.workshop4.data.favorites.FavoriteEntity
 import ru.gb.android.workshop4.data.product.ProductDto
 import ru.gb.android.workshop4.data.product.ProductEntity
@@ -11,33 +12,35 @@ class ProductDomainMapper @Inject constructor() {
             id = productDto.id,
             name = productDto.name,
             image = productDto.image,
-            price = productDto.price
+            price = productDto.price,
+            isFavorite = productDto.isFavorite
+
         )
     }
 
+    @OptIn(InternalSerializationApi::class)
     fun fromEntity(productEntity: ProductEntity): Product {
         return Product(
             id = productEntity.id,
             name = productEntity.name,
             image = productEntity.image,
             price = productEntity.price,
-//            isFavorite = productEntity.isFavorite
+            isFavorite = productEntity.isFavorite
+
+
         )
     }
 
+    @OptIn(InternalSerializationApi::class)
     fun toEntity(product: Product): ProductEntity {
         return ProductEntity(
             id = product.id,
             name = product.name,
             image = product.image,
             price = product.price,
-//            isFavorite = product.isFavorite
+            isFavorite = product.isFavorite
+
         )
     }
 
-    fun fromFavoriteEntity(favorite : FavoriteEntity) : Product {
-        return Product (
-            id = favorite.id
-        )
-    }
 }

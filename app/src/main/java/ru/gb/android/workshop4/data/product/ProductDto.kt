@@ -7,5 +7,5 @@ data class ProductDto(
     @SerializedName("name") val name: String,
     @SerializedName("image") val image: String,
     @SerializedName("price") val price: Double,
-//    @SerializedName("isFavorite") val isFavorite: Boolean
-)
+    @SerializedName("isFavorite") val isFavorite: Boolean
+    )

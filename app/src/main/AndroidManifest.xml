@@ -27,14 +27,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="ru.gb.android.workshop4.presentation.card.ProductCardActivity"
-            android:exported="true"/>
-
-        <activity
-            android:name="ru.gb.android.workshop4.presentation.ProductListActivity"
-            android:exported="true"/>
-
     </application>
 
 </manifest>

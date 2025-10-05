@@ -58,12 +58,21 @@ dependencies {
     implementation libs.kotlinx.coroutines.rx2
 
     implementation libs.dagger
+    implementation libs.androidx.junit.ktx
     kapt libs.daggerCompiler
     implementation libs.hilt
     kapt libs.hiltCompiler
 
     testImplementation libs.junit
     testImplementation libs.bundles.mockTesting
+    testImplementation libs.mockk
+    androidTestImplementation libs.hilt.android.testing
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.espresso.core
+    implementation libs.kotlin.test
+    kaptAndroidTest 'com.google.dagger:hilt-compiler:2.57.2'
+    androidTestImplementation 'androidx.test:runner:1.7.0'
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+
+
 }

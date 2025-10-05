@@ -1,133 +1,143 @@
 package ru.gb.android.marketsample
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+
+import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.InternalSerializationApi
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
-import org.mockito.kotlin.whenever
-import ru.gb.android.workshop4.data.favorites.FavoritesDataSource
-import ru.gb.android.workshop4.data.favorites.FavoritesRepository
-import ru.gb.android.workshop4.data.product.ProductDataMapper
 import ru.gb.android.workshop4.data.product.ProductDto
-import ru.gb.android.workshop4.data.product.ProductEntity
-import ru.gb.android.workshop4.data.product.ProductLocalDataSource
 import ru.gb.android.workshop4.data.product.ProductRemoteDataSource
-import ru.gb.android.workshop4.data.product.ProductRepository
 import ru.gb.android.workshop4.domain.product.AddFavoriteUseCase
-import ru.gb.android.workshop4.domain.product.ConsumeProductsUseCase
-import ru.gb.android.workshop4.domain.product.ProductDomainMapper
+import ru.gb.android.workshop4.domain.product.ConsumeFavoritesUseCase
 import ru.gb.android.workshop4.domain.product.RemoveFavoriteUseCase
-import ru.gb.android.workshop4.presentation.common.PriceFormatterImpl
 import ru.gb.android.workshop4.presentation.product.ProductListViewModel
 import ru.gb.android.workshop4.presentation.product.ProductState
 import ru.gb.android.workshop4.presentation.product.ProductStateFactory
 import ru.gb.android.workshop4.presentation.product.ProductsScreenState
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import io.mockk.unmockkAll
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import org.junit.After
+import ru.gb.android.workshop4.data.favorites.FavoriteEntity
+import kotlin.test.DefaultAsserter.assertTrue
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.dagger.hilt.android.testing.HiltAndroidRule
+import com.google.dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.impl.annotations.InjectMockKs
 
-class TestProductLocalDataSource : ProductLocalDataSource {
-    private val state = MutableStateFlow<List<ProductEntity>>(listOf())
-    override fun consumeProducts(): Flow<List<ProductEntity>> = state.asStateFlow()
-    override suspend fun saveProducts(products: List<ProductEntity>) {
-        state.value = products
-    }
-}
 
-@RunWith(MockitoJUnitRunner::class)
+@OptIn(InternalSerializationApi::class)
+@HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
 class IntegrationTest {
 
+    @InjectMockKs
     private lateinit var sut: ProductListViewModel
+
+    private val testFavoriteId = "fav456"
+
+    @Mock
+    lateinit var mockAddFavoriteUseCase: AddFavoriteUseCase
+
+    @Mock
+    lateinit var mockRemoveFavoriteUseCase: RemoveFavoriteUseCase
+
+    @Mock
+    lateinit var mockConsumeFavoritesUseCase: ConsumeFavoritesUseCase
+
+    @Mock
+    lateinit var mockProductStateFactory: ProductStateFactory
 
     @Mock
     lateinit var productRemoteDataSource: ProductRemoteDataSource
 
-    @Mock
-    lateinit var favoritesDataSource: FavoritesDataSource
+
 
     @get:Rule
-    val mainDispatcherRule = MainDispatcherRule(StandardTestDispatcher())
+    val mainDispatcherRule = MainDispatcherRule()
 
-    private val ioDispatcher = StandardTestDispatcher()
+    @get:Rule
+    var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+    @get:Rule
+    val hiltRule = HiltAnddroidRule(this)
+
+    private lateinit var ioDispatcher: TestDispatcher
 
     @Before
     fun setup() {
-        val productRepository = ProductRepository(
-            productLocalDataSource = TestProductLocalDataSource(),
-            productRemoteDataSource = productRemoteDataSource,
-            productDataMapper = ProductDataMapper(),
-            dispatcher = ioDispatcher,
-        )
-        val consumeProductsUseCase = ConsumeProductsUseCase(
-            productRepository = productRepository,
-            productDomainMapper = ProductDomainMapper(),
-        )
-        val favoritesRepository = FavoritesRepository(
-            favoritesDataSource = favoritesDataSource,
-            dispatcher = ioDispatcher
+        hiltRule.inject()
+        ioDispatcher = mainDispatcherRule.testDispatcher
+
+        coEvery { mockProductStateFactory.create(any()) } returns mockk()
+
+        coEvery { mockConsumeFavoritesUseCase() } returns flowOf(
+            listOf(mockk(), mockk())
         )
 
-        val addFavoriteUseCase = AddFavoriteUseCase(
-            favoritesRepository = favoritesRepository
-        )
-        val removeFavoriteUseCase = RemoveFavoriteUseCase(
-            favoritesRepository = favoritesRepository
-        )
+        coEvery { mockAddFavoriteUseCase(any()) } returns Unit
+        coEvery { mockRemoveFavoriteUseCase(any()) } returns Unit
 
         sut = ProductListViewModel(
-            addFavoriteUseCase = addFavoriteUseCase,
-            removeFavoriteUseCase = removeFavoriteUseCase,
-            consumeProductsUseCase = consumeProductsUseCase,
-            productStateFactory = ProductStateFactory(priceFormatter = PriceFormatterImpl()),
+            addFavoriteUseCase = mockAddFavoriteUseCase,
+            removeFavoriteUseCase = mockRemoveFavoriteUseCase,
+            consumeFavoritesUseCase = mockConsumeFavoritesUseCase,
+            productStateFactory = mockProductStateFactory,
         )
     }
 
-
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `requestProducts EXPECT show all three states`() = runTest(UnconfinedTestDispatcher()) {
+    fun `requestProducts EXPECT show all three states`() = runTest {
         // arrange
-        productsFromServer(create(id = "1", price = 100.0), create(id = "2", price = 200.0))
+        // настройка моков DataSource для ProductRemoteDataSource
+        coEvery { productRemoteDataSource.getProducts() } returns listOf(
+            makeProductDto(id = "1", price = 100.0),
+            makeProductDto(id = "2", price = 200.0)
+        )
+        //настройка мока для ProductStateFactory
+        val state1 = ProductState(id = "1", price = "100.00", isFavorite = false)
+        val state2 = ProductState(id = "2", price = "200.00", isFavorite = false)
+        coEvery { mockProductStateFactory.create(any()) } returns state1
+
         val expectedInitialState = ProductsScreenState()
         val expectedLoadingState = ProductsScreenState(isLoading = true)
         val expectedDataState = ProductsScreenState(
             isLoading = false,
-            productListState = listOf(
-                ProductState(id = "1", price = "100.00"),
-                ProductState(id = "2", price = "200.00"),
-            )
+            productListState = listOf(state1, state2)
         )
-        val (job, results) = collectResults()
 
         // act
         sut.requestProducts()
-        ioDispatcher.scheduler.runCurrent()
-        mainDispatcherRule.testDispatcher.scheduler.runCurrent()
+        mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
 
         // assert
-        assertEquals(3, results.size)
-        assertEquals(expectedInitialState, results[0])
-        assertEquals(expectedLoadingState, results[1])
-        assertEquals(expectedDataState, results[2])
-        job.cancel()
+        // проверяем начальное состояние
+        assertEquals(expectedInitialState, sut.state.value)
+
+        advanceUntilIdle()
+
+        //проверяем состояние загрузки
+        assertEquals(expectedLoadingState, sut.state.value)
+
+        advanceUntilIdle()
+
+        //проверяем конечное состояние данных
+        assertEquals(expectedDataState, sut.state.value)
+
     }
 
-    private suspend fun productsFromServer(vararg products: ProductDto) {
-        whenever(productRemoteDataSource.getProducts()).thenReturn(products.toList())
-    }
-
-    private fun create(
+    private fun makeProductDto(
         id: String = "",
         name: String = "",
         image: String = "",
@@ -138,15 +148,93 @@ class IntegrationTest {
             name = name,
             image = image,
             price = price,
-            )
+            isFavorite = false
+        )
     }
 
-    private fun CoroutineScope.collectResults(): Pair<Job, List<ProductsScreenState>> {
-        val results = mutableListOf<ProductsScreenState>()
-        val job = sut.state
-            .onEach(results::add)
-            .launchIn(this)
+    @Test
+    fun `when requestProducts is called, state updates with product list`() = runTest {
+        // act
+        sut.requestProducts()
 
-        return (job to results)
+        advanceUntilIdle()
+
+        //assert
+        //проверка состояния
+        val state = sut.state.value
+
+        assertTrue("Loading should be false", !state.isLoading)
+        assertTrue("Product list should not be empty", state.productListState.isNotEmpty())
+
+        //проверка, что UseCase был вызван
+        coVerify { mockConsumeFavoritesUseCase() }
+    }
+
+    @Test
+    fun `addToFavorites ADDS product to favorites repository`() = runTest {
+        // act
+        sut.requestProducts()
+        advanceUntilIdle()
+
+        sut.addToFavorites(testFavoriteId)
+
+        advanceUntilIdle()
+
+        //assert
+        //проверка, что UseCase был вызван
+        coVerify(exactly = 1) {
+            mockAddFavoriteUseCase(FavoriteEntity(testFavoriteId))
+        }
+
+        //проверка, что ошибки нет
+        val state = sut.state.value
+        assertTrue("Has error should be false", !state.hasError)
+    }
+
+    @Test
+    fun `removeFromFavorites REMOVES product from favorites repository`() = runTest {
+        // act
+        sut.requestProducts()
+        advanceUntilIdle()
+
+        //вызов функции удаления из избранного
+        sut.removeFromFavorites(testFavoriteId)
+
+        advanceUntilIdle()
+
+        //assert
+        coVerify(exactly = 1) {
+            mockRemoveFavoriteUseCase(FavoriteEntity(testFavoriteId))
+        }
+
+        //проверка, что ошибки нет
+        val state = sut.state.value
+        assertTrue("Has error should be false", !state.hasError)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+        unmockkAll()
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

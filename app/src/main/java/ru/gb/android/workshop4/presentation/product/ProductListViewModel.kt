@@ -4,41 +4,39 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.InternalSerializationApi
 import ru.gb.android.workshop4.data.favorites.FavoriteEntity
 import ru.gb.android.workshop4.domain.product.AddFavoriteUseCase
 import ru.gb.android.workshop4.domain.product.ConsumeFavoritesUseCase
-import ru.gb.android.workshop4.domain.product.ConsumeProductsUseCase
 import ru.gb.android.workshop4.domain.product.RemoveFavoriteUseCase
 import ru.gb.android.workshop4.marketsample.R
 import javax.inject.Inject
 
-
+@OptIn(InternalSerializationApi::class)
 @HiltViewModel
 class ProductListViewModel @Inject constructor(
-    private val consumeProductsUseCase: ConsumeProductsUseCase,
     private val productStateFactory: ProductStateFactory,
     private val addFavoriteUseCase: AddFavoriteUseCase,
     private val removeFavoriteUseCase: RemoveFavoriteUseCase,
+    private val consumeFavoritesUseCase: ConsumeFavoritesUseCase
     ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProductsScreenState())
     val state: StateFlow<ProductsScreenState> = _state.asStateFlow()
 
+
     fun requestProducts() {
-        consumeProductsUseCase()
+        consumeFavoritesUseCase()
             .map { products ->
                 products.map { product -> productStateFactory.create(product) }
             }
@@ -56,6 +54,7 @@ class ProductListViewModel @Inject constructor(
             .catch {
                 _state.update { screenState ->
                     screenState.copy(
+                        isLoading = false,
                         hasError = true,
                         errorRes = R.string.error_wile_loading_data,
                     )
@@ -76,7 +75,7 @@ class ProductListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 addFavoriteUseCase(FavoriteEntity(favoriteId))
-                Log.i("TAG","remove to favorite")
+                Log.i("TAG","add to favorite")
             } catch (e: Exception) {
                 _state.update {
                     it.copy(hasError = true, errorRes = R.string.error_favorites_operation)

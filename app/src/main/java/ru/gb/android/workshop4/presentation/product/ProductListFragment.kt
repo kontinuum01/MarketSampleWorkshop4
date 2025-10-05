@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import ru.gb.android.workshop4.marketsample.databinding.FragmentProductListBinding
 import ru.gb.android.workshop4.presentation.product.adapter.ProductsAdapter
@@ -72,6 +71,7 @@ class ProductListFragment : Fragment() {
                         }
                     }
                 }
+
             }
         }
     }
